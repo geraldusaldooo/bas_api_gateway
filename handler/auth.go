@@ -35,7 +35,7 @@ func (a *authImplement) Login(g *gin.Context) {
 			"data":    bodyPayloadAuth,
 		})
 	} else {
-		g.JSON(http.StatusBadRequest, gin.H{
+		g.JSON(http.StatusUnauthorized, gin.H{
 			"message": "Anda gagal login",
 			"data":    err,
 		})
