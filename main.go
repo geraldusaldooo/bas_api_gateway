@@ -2,12 +2,30 @@ package main
 
 import (
 	"bas_api_gateway/handler"
+	"bas_api_gateway/proto"
+	"context"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-micro/plugins/v4/client/grpc"
+	micro "go-micro.dev/v4"
+	"go-micro.dev/v4/client"
 )
 
 func main() {
 	r := gin.Default()
+
+	addressServiceTransactionOpt := client.WithAddress(":8084")
+	clientServiceTransaction := grpc.NewClient()
+
+	serviceTransaction := micro.NewService(
+		micro.Client(clientServiceTransaction),
+	)
+
+	serviceTransaction.Init(
+		micro.Name("service-transaction"),
+		micro.Version("latest"),
+	)
 
 	accountRoute := r.Group("/account")
 	accountRoute.GET("/get", handler.NewAccount().GetAccount)
@@ -16,11 +34,30 @@ func main() {
 	accountRoute.DELETE("/remove/:id", handler.NewAccount().RemoveAccount)
 	accountRoute.POST("/getbalance", handler.NewAccount().GetBalance)
 
-	transactionRoute := r.Group("/transaction")
-	transactionRoute.POST("/transferbank", handler.NewTransaction().TransferBank)
+	transferRoute := r.Group("/transfer")
+	transferRoute.POST("/transferbank", handler.NewTransaction().TransferBank)
 
 	authRoute := r.Group("/auth")
 	authRoute.POST("/login", handler.NewAuth().Login)
+
+	transactionRoute := r.Group("/transaction")
+	transactionRoute.GET("/get", func(g *gin.Context) {
+		clientResponse, err := proto.NewServiceTransactionService("service-transaction", serviceTransaction.Client()).Login(context.Background(), &proto.LoginRequest{
+			Username: "aldo",
+			Password: "1234567",
+		}, addressServiceTransactionOpt)
+
+		if err != nil {
+			g.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+				"error": err.Error(),
+			})
+		}
+
+		g.JSON(http.StatusOK, gin.H{
+			"data": clientResponse,
+		})
+	})
+
 	// r.GET("/ping", func(c *gin.Context) {
 	// 	c.JSON(http.StatusOK, gin.H{
 	// 		"message": "pong",

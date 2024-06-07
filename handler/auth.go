@@ -27,8 +27,6 @@ func (a *authImplement) Login(g *gin.Context) {
 	bodyPayloadAuth := BodyPayloadAuth{}
 	err := g.BindJSON(&bodyPayloadAuth)
 
-	usecase.NewLogin().Autentikasi(bodyPayloadAuth.Username, bodyPayloadAuth.Password)
-
 	if usecase.NewLogin().Autentikasi(bodyPayloadAuth.Username, bodyPayloadAuth.Password) {
 		g.JSON(http.StatusOK, gin.H{
 			"message": "Anda berhasil login",

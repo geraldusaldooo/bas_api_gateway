@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "./proto";
+
+service ServiceTransaction {
+	rpc Login(LoginRequest) returns (LoginResponse) {}
+	// rpc ClientStream(stream ClientStreamRequest) returns (ClientStreamResponse) {}
+	// rpc ServerStream(ServerStreamRequest) returns (stream ServerStreamResponse) {}
+	// rpc BidiStream(stream BidiStreamRequest) returns (stream BidiStreamResponse) {}
+}
+
+message LoginRequest {
+	string username = 1;
+	string password = 2;
+}
+
+message LoginData{
+	string token =1;
+}
+
+message LoginResponse{
+	string message = 1;
+	repeated LoginData data = 2;
+}
+
+// message CallResponse {
+// 	string msg = 1;
+// }
+
+// message ClientStreamRequest {
+// 	int64 stroke = 1;
+// }
+
+// message ClientStreamResponse {
+// 	int64 count = 1;
+// }
+
+// message ServerStreamRequest {
+// 	int64 count = 1;
+// }
+
+// message ServerStreamResponse {
+// 	int64 count = 1;
+// }
+
+// message BidiStreamRequest {
+// 	int64 stroke = 1;
+// }
+
+// message BidiStreamResponse {
+// 	int64 stroke = 1;
+// }

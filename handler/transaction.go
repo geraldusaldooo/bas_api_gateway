@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"bas_api_gateway/model"
+	"bas_api_gateway/utils"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -20,14 +22,27 @@ type BodyPayloadTransaction struct{}
 
 func (b *transactionImplement) TransferBank(g *gin.Context) {
 
-	bodyPayloadTxn := BodyPayloadTransaction{}
-	err := g.BindJSON(&bodyPayloadTxn)
+	BodyPayloadBank := model.Transaction{}
+	err := g.BindJSON(&BodyPayloadBank)
 
 	if err != nil {
 		g.AbortWithError(http.StatusBadRequest, err)
 	}
 
+	orm := utils.NewDatabase().Orm
+	db, _ := orm.DB()
+	defer db.Close()
+
+	result := orm.Create(&BodyPayloadBank)
+	if result.Error != nil {
+		g.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": result.Error,
+		})
+		return
+	}
+
 	g.JSON(http.StatusOK, gin.H{
-		"message": "Hello guys this API rest for later",
+		"message": "Transaction created successfully",
+		"data":    BodyPayloadBank,
 	})
 }
