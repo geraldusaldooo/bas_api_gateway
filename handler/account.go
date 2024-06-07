@@ -4,7 +4,6 @@ import (
 	"bas_api_gateway/model"
 	"bas_api_gateway/utils"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -148,13 +147,13 @@ func (a *accountImplement) RemoveAccount(g *gin.Context) {
 }
 
 type BodyPayloadBalance struct {
-	Account_ID       string
-	Transaction_Date time.Time
+	Account_ID string
+	Month      int
 }
 
 func (a *accountImplement) GetBalance(g *gin.Context) {
 
-	BodyPayloadBalance := model.Transaction{}
+	BodyPayloadBalance := BodyPayloadBalance{}
 	err := g.BindJSON(&BodyPayloadBalance)
 
 	if err != nil {
@@ -169,7 +168,11 @@ func (a *accountImplement) GetBalance(g *gin.Context) {
 		Total int
 	}{}
 
-	result := orm.Model(&model.Transaction{}).Select("sum(amount) as total").Where("account_id = ? AND date_part( 'Month' , transaction_date) = ?", BodyPayloadBalance.AccountID, BodyPayloadBalance.TransactionDate).First(&sumResult)
+	result := orm.Model(&model.Transaction{}).
+		Select("sum(amount) as total").Where("account_id = ? AND date_part( 'Month' , transaction_date) = ?", BodyPayloadBalance.Account_ID, BodyPayloadBalance.Month).
+		Group("account_id").
+		Scan(&sumResult)
+
 	if result.Error != nil {
 		g.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 			"error": result.Error,
@@ -178,8 +181,8 @@ func (a *accountImplement) GetBalance(g *gin.Context) {
 	}
 
 	g.JSON(http.StatusOK, gin.H{
-		"message": "Get account successfully",
-		"data":    BodyPayloadBalance,
+		"message": "Get total successfully",
+		"data":    sumResult,
 	})
 
 }
